@@ -6,9 +6,20 @@ var player = {
 	state : 'idle',
 	target : {
 		x : 0,
-		y : 0
+		z : 0
 	}
 };
+
+function direction(a, b) {
+	var dx = b.x - a.x;
+	var dz = b.z - a.z;
+	return Math.atan2(dz, dx);
+}
+function distance(a, b) {
+	var dx = b.x - a.x;
+	var dz = b.z - a.z;
+	return Math.sqrt(dx * dx + dz * dz);
+}
 
 window.addEventListener("load", function () {
 	"use strict";
@@ -47,6 +58,7 @@ window.addEventListener("load", function () {
 
 	var geometry = new THREE.CubeGeometry(1, 1, 1);
 	var material = new THREE.MeshPhongMaterial({color: 0xaaaaaa});
+	var blueMaterial = new THREE.MeshPhongMaterial({color: 0x5555FF});
 	var cube = new THREE.Mesh(geometry, material);
 	cube.position.y += 1;
 	cube.position.x += 5;
@@ -78,7 +90,7 @@ window.addEventListener("load", function () {
 
 		for (var i = 0, l = object.children.length; i < l; i++ ) {
 			//object.children[ i ].material.map = texture;
-			object.children[ i ].material = material;
+			object.children[ i ].material = blueMaterial;
 		}
 
 		object.position.y = 0;
@@ -108,10 +120,10 @@ window.addEventListener("load", function () {
 	function render () {
 		//controls.update();
 		checkKeyboard();
+		updatePlayer();
 		requestAnimationFrame(render);
 		cube.rotation.x += 0.01;
 		cube.rotation.y += 0.01;
-		object.rotation.y += 0.01;
 		
 		renderer.render(scene, camera); 
 	} 
@@ -135,6 +147,22 @@ window.addEventListener("load", function () {
 		}
 		if (keyboard.pressed("D")) {
 			camera.position.x += 0.5;
+		}
+	}
+	
+	function updatePlayer() {
+		if (player.state === 'moving') {
+			var dir = direction(object.position, player.target);
+			object.rotation.y = -dir;
+			object.position.x += Math.cos(dir) * 0.1;
+			object.position.z += Math.sin(dir) * 0.1;
+			
+			if (distance(object.position, player.target) <= 1)
+			{
+				player.state = 'idle';
+				cube.position.x = 10000;
+				cube.position.z = 10000;
+			}
 		}
 	}
 	
@@ -172,6 +200,10 @@ window.addEventListener("load", function () {
 		
 		cube.position.x = goalVector.x;
 		cube.position.z = goalVector.z;
+		player.state = 'moving';
+		
+		player.target.x = goalVector.x;
+		player.target.z = goalVector.z;
 	}
 			
 	window.addEventListener( 'resize', onWindowResize);
