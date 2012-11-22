@@ -65,12 +65,17 @@
 * Library for networking
 	* ICE library would require the source code of applications using it to be OpenSource. The client could be opensource, but I doubt the server should.
 	* ZeroMQ is released under LGPL, which makes it possible to dynamically link it to the program.
-* Lua for all items, champion abilities and map scripting
+* ~~Lua for all items, champion abilities and map scripting~~
+	* ~~Custom game content TBDecided~~
+	* ~~Lua is under MIT licence - no problems here~~
+* JSON for all items, champion abilities and map scriptin
 	* Custom game content TBDecided
-	* Lua is under MIT licence - no problems here
-* Shameless steal of SFML window classes?
-	* Windows, Linux and MacOS out-of-the-box
-	* SFML has free commercial licence, but it has some LGPL components inside
+	* JSON is native JS format so will be parsed/loaded much faster than lua/xml
+* ~~Shameless steal of SFML window classes?~~
+	* ~~Windows, Linux and MacOS out-of-the-box~~
+	* ~~SFML has free commercial licence, but it has some LGPL components inside~~
+* Interoperability out of the box
+	* webGL working on any OS in any webkit browser (best on Chrome) and possibly on other browsers in the future (Firefox and even IE?)
 
 ### What I’d like to see in Alpha stage (circa 3 months) ###
 
