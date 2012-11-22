@@ -63,8 +63,14 @@
 * WebGL 3D Engine
 	* After some discussion, **Three.js was chosen** due to its powerful features and popularity, whilst still being simple and fast.
 * Library for networking
-	* ICE library would require the source code of applications using it to be OpenSource. The client could be opensource, but I doubt the server should.
-	* ZeroMQ is released under LGPL, which makes it possible to dynamically link it to the program.
+	* ~~Ice library?~~
+		* ICE library would require the source code of applications using it to be OpenSource. The client could be opensource, but I doubt the server should.
+	* ~~ZeroMQ is released under LGPL, which makes it possible to dynamically link it to the program.~~
+		* ZeroMQ JavaScript binding uses Flash for TCP connection.
+	* [**Socket.IO**](http://socket.io) - care-free realtime 100% in JavaScript on both server- and client-side
+		* Client uses native WebSocket which communicates through TCP
+		* Server on [Node.js](http://nodejs.org)
+		* Should work on all browsers (including mobile) and without Flash
 * ~~Lua for all items, champion abilities and map scripting~~
 	* ~~Custom game content TBDecided~~
 	* ~~Lua is under MIT licence - no problems here~~
