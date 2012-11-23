@@ -143,17 +143,23 @@ window.addEventListener("load", function () {
 	pointLight2.position.z = 130;
 	scene.add(pointLight2);
 
-	function render () {
+	var prevTime = 0;
+
+	function render (curTime) {
 		stats.begin();
-		//controls.update();
-		checkKeyboard();
-		updatePlayer();
+		if (curTime - prevTime  > 16) {
+			//controls.update(); 	
+			while (curTime - prevTime  > 16) {
+				checkKeyboard();
+				updatePlayer();
+				cube.rotation.x += 0.05;
+				cube.rotation.y += 0.05;
+				prevTime += 16;
+			}			
+			renderer.render(scene, camera);
+			stats.end();
+		}
 		requestAnimationFrame(render, renderer.domElement);
-		cube.rotation.x += 0.01;
-		cube.rotation.y += 0.01;
-		
-		renderer.render(scene, camera);
-		stats.end();
 	} 
 	
 	function onWindowResize() {
@@ -182,8 +188,8 @@ window.addEventListener("load", function () {
 		if (player.state === 'moving') {
 			var dir = direction(object.position, player.target);
 			object.rotation.y = -dir;
-			object.position.x += Math.cos(dir) * 0.1;
-			object.position.z += Math.sin(dir) * 0.1;
+			object.position.x += Math.cos(dir) * 0.2;
+			object.position.z += Math.sin(dir) * 0.2;
 			
 			if (distance(object.position, player.target) <= 1)
 			{
@@ -274,7 +280,7 @@ window.addEventListener("load", function () {
 		if (THREEx.FullScreen.activated()) {
 		    window.removeEventListener('click', onWindowClick);
 		} else {
-		    THREEx.FullScreen.request();
+		    //THREEx.FullScreen.request();
 		}
 	});
 
@@ -284,6 +290,5 @@ window.addEventListener("load", function () {
 	stats.domElement.style.left = '0px';
 	stats.domElement.style.top = '0px';
 	document.body.appendChild(stats.domElement);
-
-	render();
+	render(0);
 });
