@@ -143,9 +143,10 @@ window.addEventListener("load", function () {
 	pointLight2.position.z = 130;
 	scene.add(pointLight2);
 
-	var prevTime = 0;
+	var prevTime = Date.now();
+	var curTime = Date.now();
 
-	function render (curTime) {
+	function render () {
 		stats.begin();
 		if (curTime - prevTime  > 16) {
 			//controls.update(); 	
@@ -155,10 +156,11 @@ window.addEventListener("load", function () {
 				cube.rotation.x += 0.05;
 				cube.rotation.y += 0.05;
 				prevTime += 16;
-			}			
+			}
 			renderer.render(scene, camera);
 			stats.end();
 		}
+		curTime = Date.now();
 		requestAnimationFrame(render, renderer.domElement);
 	} 
 	
@@ -290,5 +292,5 @@ window.addEventListener("load", function () {
 	stats.domElement.style.left = '0px';
 	stats.domElement.style.top = '0px';
 	document.body.appendChild(stats.domElement);
-	render(0);
+	render();
 });
