@@ -99,7 +99,7 @@ window.addEventListener("load", function () {
 		object.scale.z = 2;
 		scene.add( object );
 	});
-	loader.load( 'models/tv.obj' );
+	loader.load( 'models/TV.obj' );
 
 	var pointLight1 = new THREE.PointLight(0xaaFFaa);
 	pointLight1.position.x = 130;
