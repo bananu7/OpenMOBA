@@ -148,7 +148,7 @@ window.addEventListener("load", function () {
 		//controls.update();
 		checkKeyboard();
 		updatePlayer();
-		requestAnimationFrame(render);
+		requestAnimationFrame(render, renderer.domElement);
 		cube.rotation.x += 0.01;
 		cube.rotation.y += 0.01;
 		
@@ -268,8 +268,15 @@ window.addEventListener("load", function () {
 		player.target.z = goalVector.z;
 	}
 			
-	window.addEventListener( 'resize', onWindowResize);
+	window.addEventListener('resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
+	window.addEventListener('click', function onWindowClick () {
+		if (THREEx.FullScreen.activated()) {
+		    window.removeEventListener('click', onWindowClick);
+		} else {
+		    THREEx.FullScreen.request();
+		}
+	});
 
 	var stats = new Stats();
 	stats.setMode(0); // 0: fps, 1: ms
