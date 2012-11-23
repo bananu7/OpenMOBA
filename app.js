@@ -144,6 +144,7 @@ window.addEventListener("load", function () {
 	scene.add(pointLight2);
 
 	function render () {
+		stats.begin();
 		//controls.update();
 		checkKeyboard();
 		updatePlayer();
@@ -151,7 +152,8 @@ window.addEventListener("load", function () {
 		cube.rotation.x += 0.01;
 		cube.rotation.y += 0.01;
 		
-		renderer.render(scene, camera); 
+		renderer.render(scene, camera);
+		stats.end();
 	} 
 	
 	function onWindowResize() {
@@ -268,5 +270,13 @@ window.addEventListener("load", function () {
 			
 	window.addEventListener( 'resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
+
+	var stats = new Stats();
+	stats.setMode(0); // 0: fps, 1: ms
+	stats.domElement.style.position = 'absolute';
+	stats.domElement.style.left = '0px';
+	stats.domElement.style.top = '0px';
+	document.body.appendChild(stats.domElement);
+
 	render();
 });
