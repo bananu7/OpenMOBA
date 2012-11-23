@@ -1,6 +1,7 @@
 /*global THREE: false */
 /*jslint browser: true, nomen: true */
 var scene;
+var object;
 
 var player = {
 	state : 'idle',
@@ -62,29 +63,30 @@ window.addEventListener("load", function () {
 	var cube = new THREE.Mesh(geometry, material);
 	cube.position.y += 1;
 	cube.position.x += 5;
+	cube.name = 'cube';
 	scene.add(cube);
 	
-	var planeGeometry = new THREE.CubeGeometry(20, 0.1, 20);
-	var plane = new THREE.Mesh(planeGeometry, material);
-	scene.add(plane);
-
-	camera.position.z = 5;
-	camera.position.y = 10;
+	var pickerGeometry = new THREE.CubeGeometry(1, 1, 1);
+	pickerGeometry.computeCentroids();
+	var picker = new THREE.Mesh(geometry, blueMaterial);
+	picker.position.y += 1;
+	picker.position.x += 5;
+	picker.name = 'picker';
+	scene.add(picker);
+	
+	camera.position.z = 15;
+	camera.position.y = 20;
 	camera.rotation.x = -1.0;
 	
-	/*
-	var loader = new THREE.ImageLoader();
-	loader.addEventListener( 'load', function ( event ) {
+	var planeGeometry = new THREE.CubeGeometry(20, 0.1, 20);
+	var planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg");
+	var planeMaterial = new THREE.MeshLambertMaterial({map: planeMap });
+	var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+	plane.name = 'plane';
+	scene.add(plane);
 
-		texture.image = event.content;
-		texture.needsUpdate = true;
-
-	} );
-	loader.load( 'textures/ash_uvgrid01.jpg' );
-	*/
 	
 	var loader = new THREE.OBJLoader();
-	var object;
 	loader.addEventListener( 'load', function (event) {
 		object = event.content;
 
@@ -97,10 +99,34 @@ window.addEventListener("load", function () {
 		object.scale.x = 2;
 		object.scale.y = 2;
 		object.scale.z = 2;
+		object.children[0].name = 'mech';
+		//object.children[0].geometsdry.computeCentroids();
 		scene.add( object );
 	});
-	loader.load( 'models/TV.obj' );
 
+	loader.load( 'models/TV.obj' );
+	
+	var jsloader = new THREE.JSONLoader();
+	var mesh;
+    jsloader.load(
+		"models/Blok/Blok.json",
+		function(geometry, materials) {
+			//console.log(geometry);
+			//console.log(materials);
+			//mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial({overdraw:true}));
+			mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+			//var mesh = new THREE.Mesh(geometry, blueMaterial);
+			//mesh.position.x += 50;
+			scene.add( mesh );
+			
+			mesh.position.x += 30;
+			mesh.scale.x = 0.5;
+			mesh.scale.y = 0.5;
+			mesh.scale.z = 0.5;
+		}
+	);
+
+	
 	var pointLight1 = new THREE.PointLight(0xaaFFaa);
 	pointLight1.position.x = 130;
 	pointLight1.position.y = 50;
@@ -166,12 +192,46 @@ window.addEventListener("load", function () {
 		}
 	}
 	
+	function testForPicking(x, y) { 
+		var vector = new THREE.Vector3( x, y, 1 );
+		projector.unprojectVector( vector, camera );
+
+		var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+		var intersects = ray.intersectObjects( scene.children, true );
+
+		if ( intersects.length > 0 ) {
+			var target = intersects[0].object;
+			if (target.name === 'picker')
+				target.position.y += 0.5;
+			/*if ( INTERSECTED != intersects[ 0 ].object ) {
+				if ( INTERSECTED )
+					INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+				INTERSECTED = intersects[ 0 ].object;
+				INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+				INTERSECTED.material.emissive.setHex( 0xff0000 );
+			}*/
+			console.log("HIT! " + target.name);
+		} 
+		else {
+			console.log("missed");
+			/*
+			if ( INTERSECTED )
+				INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
+
+			INTERSECTED = null;
+			*/
+		}
+	}
+	
 	function onMouseDown(event) {
 		var x = event.clientX;
 		var y = event.clientY;
 		
 		x = ( x / window.innerWidth ) * 2 - 1;
 		y = 1 - ( y / window.innerHeight ) * 2;
+		
+		testForPicking(x, y);
 		
 		var startVector = new THREE.Vector3(),
 			endVector = new THREE.Vector3(),
