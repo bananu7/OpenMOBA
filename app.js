@@ -3,7 +3,6 @@
 var scene;
 var projector;
 var camera;
-var cube;
 
 var player = {
 	state : 'idle',
@@ -12,13 +11,32 @@ var player = {
 		z : 0
 	},	
 	move : function (mapX, mapZ) {
-		cube.position.x = mapX;
-		cube.position.z = mapZ;
+		$('waypoint').position.y = 0;
+		$('waypoint').position.x = mapX;
+		$('waypoint').position.z = mapZ;
+		
 		player.state = 'moving';
 		
 		player.target.x = mapX;
 		player.target.z = mapZ;
-	}
+	},
+	
+	update : function () {
+		if (player.state === 'moving') {
+			var mech = $("mech");
+			
+			var dir = direction(mech.position, player.target);
+			mech.rotation.y = -dir;
+			mech.position.x += Math.cos(dir) * 0.2;
+			mech.position.z += Math.sin(dir) * 0.2;
+			
+			if (distance(mech.position, player.target) <= 0.5)
+			{
+				player.state = 'idle';
+				$('waypoint').position.y = 3;
+			}
+		}
+	},
 };
 
 function normalisedMouseToPlane (mouseX, mouseY) {
@@ -80,12 +98,6 @@ window.addEventListener("load", function () {
 		geometry = new THREE.CubeGeometry(1, 1, 1),
 		material = new THREE.MeshPhongMaterial({color: 0xaaaaaa}),
 		blueMaterial = new THREE.MeshPhongMaterial({color: 0x5555FF});
-		
-	cube = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial());
-	cube.position.y += 1;
-	cube.position.x += 5;
-	cube.name = 'cube';
-	scene.add(cube);
 	
 	// Second cube (possible to lift up to the air)
 	var pickerGeometry = new THREE.CubeGeometry(1, 1, 1);
@@ -115,6 +127,10 @@ window.addEventListener("load", function () {
 		obj.scale.y = 2;
 		obj.scale.z = 2;
 	});
+	
+	objectManager.addObject("waypoint", "models/Waypoint.json", function (obj) {
+		obj.position.y = 3;
+	});
 
 	// Lights
 	var pointLight1 = new THREE.PointLight(0xaaFFaa);
@@ -138,13 +154,12 @@ window.addEventListener("load", function () {
 
 	function render () {
 		stats.begin();
-		if (curTime - prevTime  > 16) {
+		if (curTime - prevTime > 16) {
 			//controls.update(); 	
-			while (curTime - prevTime  > 16) {
+			while (curTime - prevTime > 16) {
 				checkKeyboard();
-				updatePlayer();
-				cube.rotation.x += 0.05;
-				cube.rotation.y += 0.05;
+				player.update();
+				$('waypoint').rotation.y -= 0.05;
 				prevTime += 16;
 			}
 			renderer.render(scene, camera);
@@ -173,24 +188,6 @@ window.addEventListener("load", function () {
 		}
 		if (keyboard.pressed("D")) {
 			camera.position.x += 0.5;
-		}
-	}
-	
-	function updatePlayer() {
-		if (player.state === 'moving') {
-			var mech = $("mech");
-			
-			var dir = direction(mech.position, player.target);
-			mech.rotation.y = -dir;
-			mech.position.x += Math.cos(dir) * 0.2;
-			mech.position.z += Math.sin(dir) * 0.2;
-			
-			if (distance(mech.position, player.target) <= 1)
-			{
-				player.state = 'idle';
-				cube.position.x = 10000;
-				cube.position.z = 10000;
-			}
 		}
 	}
 	
