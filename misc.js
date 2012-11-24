@@ -71,7 +71,10 @@ var objectManager = (function () {
 				delete objects[name];
 			}
 		},
-
+		/**
+		 * Pushes back callback functions which are to be executed when all models are loaded.
+		 * @param  {Function} cb [Callback function to be executed with all objects as an argument]
+		 */
 		onAllLoaded: (function () {
 			var cbs = [];
 			return function (cb) {
