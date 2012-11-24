@@ -11,8 +11,7 @@ var player = {
 	target : {
 		x : 0,
 		z : 0
-	},
-	
+	},	
 	move : function (mapX, mapZ) {
 		cube.position.x = mapX;
 		cube.position.z = mapZ;
@@ -20,44 +19,73 @@ var player = {
 		
 		player.target.x = mapX;
 		player.target.z = mapZ;
+	},
+};
+
+var objectManager = {
+	loaderJSON : new THREE.JSONLoader(),
+	objects : { },
+
+	addObject : function (name, path) {
+		if (this.objects[name] == null) {
+			this.loaderJSON.load(
+				path,
+				function (geometry, materials) {
+					this.objects[name] = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
+					scene.add(this.objects[name]);
+				}.bind(this)
+			);
+			
+		}
+	},
+	
+	getByName : function (name) {
+		return this.objects[name];
+	},
+
+	removeObject : function (name) {
+		if (this.objects[name]) {
+			scene.remove(this.objects[name]);
+			this.objects[name] = null;
+		}
 	}
 };
 
-function normalisedMouseToPlane(mouseX, mouseY) {
-	var 
+function normalisedMouseToPlane (mouseX, mouseY) {
+	var
 		startVector = new THREE.Vector3(),
 		endVector = new THREE.Vector3(),
 		dirVector = new THREE.Vector3(),
 		goalVector = new THREE.Vector3(),
 		t;
 
-	startVector.set( mouseX, mouseY, -1.0 );
-	endVector.set( mouseX, mouseY, 1.0 );
+	startVector.set(mouseX, mouseY, -1.0);
+	endVector.set(mouseX, mouseY, 1.0);
 
 	// Convert back to 3D world coordinates
-	startVector = projector.unprojectVector( startVector, camera );
-	endVector = projector.unprojectVector( endVector, camera );
+	startVector = projector.unprojectVector(startVector, camera);
+	endVector = projector.unprojectVector(endVector, camera);
 
 	// Get direction from startVector to endVector
-	dirVector.sub( endVector, startVector );
+	dirVector.sub(endVector, startVector);
 	dirVector.normalize();
 
 	// Find intersection where y = 0
-	t = startVector.y / - ( dirVector.y );
+	t = startVector.y / - (dirVector.y);
 
 	// Find goal point
-	goalVector.set( startVector.x + t * dirVector.x,
+	goalVector.set(startVector.x + t * dirVector.x,
 					startVector.y + t * dirVector.y,
-					startVector.z + t * dirVector.z );
+					startVector.z + t * dirVector.z);
 	return goalVector;
 }
 
 window.addEventListener("load", function () {
 	"use strict";
-	
+
 	// Keyboard input
 	var keyboard = new THREEx.KeyboardState();
-	
+
 	// Scene
 	scene = new THREE.Scene();
 	
@@ -70,9 +98,6 @@ window.addEventListener("load", function () {
 	
 	// point-and-click
 	projector = new THREE.Projector();
-	var
-		p3D = new THREE.Vector3(25, 15, 9),
-		p2D;
 	
 	// Renderer
 	var renderer = new THREE.WebGLRenderer();
@@ -80,10 +105,12 @@ window.addEventListener("load", function () {
 	document.body.appendChild(renderer.domElement);
 
 	// Cube (currently used as a waypoint)
-	var geometry = new THREE.CubeGeometry(1, 1, 1);
-	var material = new THREE.MeshPhongMaterial({color: 0xaaaaaa});
-	var blueMaterial = new THREE.MeshPhongMaterial({color: 0x5555FF});
-	cube = new THREE.Mesh(geometry, material);
+	var
+		geometry = new THREE.CubeGeometry(1, 1, 1),
+		material = new THREE.MeshPhongMaterial({color: 0xaaaaaa}),
+		blueMaterial = new THREE.MeshPhongMaterial({color: 0x5555FF});
+		
+	cube = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial());
 	cube.position.y += 1;
 	cube.position.x += 5;
 	cube.name = 'cube';
@@ -99,36 +126,23 @@ window.addEventListener("load", function () {
 	scene.add(picker);
 	
 	// Grass Plane
-	var planeGeometry = new THREE.CubeGeometry(20, 0.1, 20);
-	var planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg");
-	var planeMaterial = new THREE.MeshLambertMaterial({map: planeMap });
-	var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+	var 
+		planeGeometry = new THREE.CubeGeometry(20, 0.1, 20),
+		planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg"),
+		planeMaterial = new THREE.MeshLambertMaterial({map: planeMap }),
+		plane = new THREE.Mesh(planeGeometry, planeMaterial);
 	plane.name = 'plane';
 	scene.add(plane);
-
-	// Mech model
-	var loader = new THREE.OBJLoader();
-	loader.addEventListener( 'load', function (event) {
-		object = event.content;
-
-		for (var i = 0, l = object.children.length; i < l; i++ ) {
-			//object.children[ i ].material.map = texture;
-			object.children[ i ].material = blueMaterial;
-		}
-
-		object.position.y = 0;
-		object.scale.x = 2;
-		object.scale.y = 2;
-		object.scale.z = 2;
-		object.children[0].name = 'mech';
-		//object.children[0].geometsdry.computeCentroids();
-		scene.add( object );
-	});
-	loader.load( 'models/TV.obj' );
 	
 	// Block of flats
-	var jsloader = new THREE.JSONLoader();
-	var mesh;
+	var
+		jsloader = new THREE.JSONLoader(),
+		mesh;
+		
+	objectManager.addObject("blok", "models/Blok/Blok.json");
+	console.log (objectManager);
+	//objectManager.getByName("blok").position.x += 30;
+	/*	
     jsloader.load(
 		"models/Blok/Blok.json",
 		function(geometry, materials) {
@@ -138,12 +152,25 @@ window.addEventListener("load", function () {
 			mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 			//var mesh = new THREE.Mesh(geometry, blueMaterial);
 			//mesh.position.x += 50;
-			scene.add( mesh );
+			scene.add(mesh);
 			
 			mesh.position.x += 30;
 			mesh.scale.x = 0.5;
 			mesh.scale.y = 0.5;
 			mesh.scale.z = 0.5;
+		}
+	);*/
+	
+	jsloader.load(
+		"models/TV.json",
+		function (geometry, materials) {
+			object = new THREE.Mesh(geometry, blueMaterial);
+			scene.add(object);
+			object.position.y = 0;
+			object.scale.x = 2;
+			object.scale.y = 2;
+			object.scale.z = 2;
+			object.name = 'mech';
 		}
 	);
 
@@ -224,13 +251,13 @@ window.addEventListener("load", function () {
 	}
 	
 	function testForPicking(x, y) { 
-		var vector = new THREE.Vector3( x, y, 1 );
+		var vector = new THREE.Vector3(x, y, 1);
 		projector.unprojectVector( vector, camera );
 
-		var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
-		var intersects = ray.intersectObjects( scene.children, true );
+		var ray = new THREE.Ray(camera.position, vector.subSelf( camera.position ).normalize());
+		var intersects = ray.intersectObjects(scene.children, true);
 
-		if ( intersects.length > 0 ) {
+		if (intersects.length > 0) {
 			var target = intersects[0].object;
 			if (target.name === 'picker')
 				target.position.y += 0.5;
@@ -261,8 +288,8 @@ window.addEventListener("load", function () {
 		var x = event.clientX;
 		var y = event.clientY;
 		
-		x = ( x / window.innerWidth ) * 2 - 1;
-		y = 1 - ( y / window.innerHeight ) * 2;
+		x = (x / window.innerWidth) * 2 - 1;
+		y = 1 - (y / window.innerHeight) * 2;
 		
 		var hitSomething = testForPicking(x, y);
 		
