@@ -1,5 +1,5 @@
 /*global THREE: false */
-/*jslint browser: true, nomen: true */
+/*jslint es5: true, nomen: true, vars: true, browser: true */
 function direction(a, b) {
 	"use strict";
 	var dx,
@@ -9,6 +9,7 @@ function direction(a, b) {
 	dz = b.z - a.z;
 	return Math.atan2(dz, dx);
 }
+
 function distance(a, b) {
 	"use strict";
 	var dx,
@@ -40,6 +41,9 @@ var objectManager = (function () {
 				this.loaderJSON.load(path, function (geometry, materials) {
 					objects[name] = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 					scene.add(objects[name]);
+					if (cb && typeof cb === "function") {
+						cb(objects[name]);
+					}
 				});
 			} else {
 				throw new Error("Object of this name already exists!");
