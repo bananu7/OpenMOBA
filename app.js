@@ -1,10 +1,9 @@
 /*global THREE: false */
 /*jslint es5: true, nomen: true, vars: true, browser: true */
 var scene;
-var object;
 var projector;
 var camera;
-var cube;
+var light;
 
 var player = {
 	state : 'idle',
@@ -13,16 +12,33 @@ var player = {
 		z : 0
 	},	
 	move : function (mapX, mapZ) {
-		cube.position.x = mapX;
-		cube.position.z = mapZ;
+		$('waypoint').position.y = 0;
+		$('waypoint').position.x = mapX;
+		$('waypoint').position.z = mapZ;
+		
 		player.state = 'moving';
 		
 		player.target.x = mapX;
 		player.target.z = mapZ;
-	}
+	},
+	
+	update : function () {
+		if (player.state === 'moving') {
+			var mech = $("mech");
+			
+			var dir = direction(mech.position, player.target);
+			mech.rotation.y = -dir;
+			mech.position.x += Math.cos(dir) * 0.2;
+			mech.position.z += Math.sin(dir) * 0.2;
+			
+			if (distance(mech.position, player.target) <= 0.5)
+			{
+				player.state = 'idle';
+				$('waypoint').position.y = 3;
+			}
+		}
+	},
 };
-
-
 
 function normalisedMouseToPlane (mouseX, mouseY) {
 	var
@@ -75,6 +91,8 @@ window.addEventListener("load", function () {
 	
 	// Renderer
 	var renderer = new THREE.WebGLRenderer();
+	renderer.shadowMapEnabled	= true;
+	renderer.shadowMapSoft		= true;
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	document.body.appendChild(renderer.domElement);
 
@@ -83,12 +101,6 @@ window.addEventListener("load", function () {
 		geometry = new THREE.CubeGeometry(1, 1, 1),
 		material = new THREE.MeshPhongMaterial({color: 0xaaaaaa}),
 		blueMaterial = new THREE.MeshPhongMaterial({color: 0x5555FF});
-		
-	cube = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial());
-	cube.position.y += 1;
-	cube.position.x += 5;
-	cube.name = 'cube';
-	scene.add(cube);
 	
 	// Second cube (possible to lift up to the air)
 	var pickerGeometry = new THREE.CubeGeometry(1, 1, 1);
@@ -97,88 +109,86 @@ window.addEventListener("load", function () {
 	picker.position.y += 1;
 	picker.position.x += 5;
 	picker.name = 'picker';
+	picker.castShadow = true;
+	picker.receiveShadow = true;
 	scene.add(picker);
 	
 	// Grass Plane
 	var 
-		planeGeometry = new THREE.CubeGeometry(20, 0.1, 20),
+		planeGeometry = new THREE.CubeGeometry(200, 0.1, 200),
 		planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg"),
-		planeMaterial = new THREE.MeshLambertMaterial({map: planeMap }),
+		//planeMaterial = new THREE.MeshLambertMaterial({map: planeMap }),
+		planeMaterial = new THREE.MeshPhongMaterial(0x333333),
 		plane = new THREE.Mesh(planeGeometry, planeMaterial);
 	plane.name = 'plane';
+	plane.receiveShadow = true;
 	scene.add(plane);
-	
-	// Block of flats
-	var
-		jsloader = new THREE.JSONLoader(),
-		mesh;
 		
-	objectManager.onAllLoaded(function () { console.log(arguments); });
-	objectManager.addObject("blok", "models/Blok/Blok.json");
-	objectManager.addObject("blok2", "models/Blok/Blok.json");
-	console.log (objectManager);
-	//objectManager.getByName("blok").position.x += 30;
-	/*	
-    jsloader.load(
-		"models/Blok/Blok.json",
-		function(geometry, materials) {
-			//console.log(geometry);
-			//console.log(materials);
-			//mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial({overdraw:true}));
-			mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-			//var mesh = new THREE.Mesh(geometry, blueMaterial);
-			//mesh.position.x += 50;
-			scene.add(mesh);
-			
-			mesh.position.x += 30;
-			mesh.scale.x = 0.5;
-			mesh.scale.y = 0.5;
-			mesh.scale.z = 0.5;
-		}
-	);*/
+	objectManager.addObject("blok", "models/Blok/Blok.json", function (obj) {
+		obj.position.x -= 30;
+		obj.castShadow = true;
+		obj.receiveShadow = true;
+	});
 	
-	jsloader.load(
-		"models/TV.json",
-		function (geometry, materials) {
-			object = new THREE.Mesh(geometry, blueMaterial);
-			scene.add(object);
-			object.position.y = 0;
-			object.scale.x = 2;
-			object.scale.y = 2;
-			object.scale.z = 2;
-			object.name = 'mech';
-		}
-	);
+	objectManager.addObject("mech", "models/TV.json", function (obj) {
+		obj.position.y = 0;
+		obj.scale.x = 2;
+		obj.scale.y = 2;
+		obj.scale.z = 2;
+		obj.castShadow = true;
+		obj.receiveShadow = true;
+	});
+	
+	objectManager.addObject("waypoint", "models/Waypoint.json", function (obj) {
+		obj.position.y = 3;
+		obj.castShadow = true;
+		obj.receiveShadow = true;
+	});
 
-	// Lights
-	var pointLight1 = new THREE.PointLight(0xaaFFaa);
-	pointLight1.position.x = 130;
-	pointLight1.position.y = 50;
-	pointLight1.position.z = 10;
-	scene.add(pointLight1);
-	var pointLight2 = new THREE.PointLight(0xFFaaaa);
+	light = new THREE.SpotLight( 0xffffdd, 1, 0, Math.PI, 1 );
+	light.position.set(30, 30, 30);
+	light.target.position.set(0, 0, 0);
+
+	light.castShadow = true;
+
+	light.shadowCameraNear = 1;
+	light.shadowCameraFar = 300;
+	//light.shadowCameraFov = 70;
+
+	light.shadowCameraVisible = true;
+
+	//light.shadowBias = 0.0001;
+	light.shadowDarkness = 1.0;
+
+	var SHADOW_MAP_WIDTH = 8192, SHADOW_MAP_HEIGHT = 4096;
+
+	light.shadowMapWidth = SHADOW_MAP_WIDTH;
+	light.shadowMapHeight = SHADOW_MAP_HEIGHT;
+
+	scene.add( light );
+	
+	var pointLight2 = new THREE.SpotLight(0xFFaaaa);
 	pointLight2.position.x = 10;
 	pointLight2.position.y = 50;
 	pointLight2.position.z = 130;
-	scene.add(pointLight2);
+	//scene.add(pointLight2);
 	var pointLight2 = new THREE.PointLight(0xaaaaFF);
 	pointLight2.position.x = 130;
 	pointLight2.position.y = 50;
 	pointLight2.position.z = 130;
-	scene.add(pointLight2);
+	//scene.add(pointLight2);
 
 	var prevTime = Date.now();
 	var curTime = Date.now();
 
 	function render () {
 		stats.begin();
-		if (curTime - prevTime  > 16) {
+		if (curTime - prevTime > 16) {
 			//controls.update(); 	
-			while (curTime - prevTime  > 16) {
+			while (curTime - prevTime > 16) {
 				checkKeyboard();
-				updatePlayer();
-				cube.rotation.x += 0.05;
-				cube.rotation.y += 0.05;
+				player.update();
+				$('waypoint').rotation.y -= 0.05;
 				prevTime += 16;
 			}
 			renderer.render(scene, camera);
@@ -210,22 +220,6 @@ window.addEventListener("load", function () {
 		}
 	}
 	
-	function updatePlayer() {
-		if (player.state === 'moving') {
-			var dir = direction(object.position, player.target);
-			object.rotation.y = -dir;
-			object.position.x += Math.cos(dir) * 0.2;
-			object.position.z += Math.sin(dir) * 0.2;
-			
-			if (distance(object.position, player.target) <= 1)
-			{
-				player.state = 'idle';
-				cube.position.x = 10000;
-				cube.position.z = 10000;
-			}
-		}
-	}
-	
 	function testForPicking(x, y) { 
 		var vector = new THREE.Vector3(x, y, 1);
 		projector.unprojectVector( vector, camera );
@@ -237,6 +231,9 @@ window.addEventListener("load", function () {
 			var target = intersects[0].object;
 			if (target.name === 'picker')
 				target.position.y += 0.5;
+				
+			if (target.name === 'plane')
+				return false;
 			/*if ( INTERSECTED != intersects[ 0 ].object ) {
 				if ( INTERSECTED )
 					INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
@@ -274,10 +271,20 @@ window.addEventListener("load", function () {
 			var planeTarget = normalisedMouseToPlane(x, y);
 			player.move(planeTarget.x, planeTarget.z);
 		}
+		return true;
+	}
+	
+	function contextMenu(event) {
+		return false;
+	}
+	function mouseWheel(event) {
+		camera.position.y -= (event.wheelDelta / 120);
 	}
 			
 	window.addEventListener('resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
+	window.addEventListener('mousewheel', mouseWheel);
+	window.oncontextmenu = contextMenu;
 	// Uncomment that to turn on fullscreen
 	/*window.addEventListener('click', function onWindowClick () {```
 		if (THREEx.FullScreen.activated()) {
