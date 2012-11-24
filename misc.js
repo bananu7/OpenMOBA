@@ -20,6 +20,10 @@ function distance(a, b) {
 	return Math.sqrt(dx * dx + dz * dz);
 }
 
+/**
+ * Own manager/loader of THREE objects
+ * @type {Object}
+ */
 var objectManager = (function () {
 	"use strict";
 	var objects = {},
@@ -31,10 +35,20 @@ var objectManager = (function () {
 	C = {
 		loaderJSON: new THREE.JSONLoader(),
 
+		/**
+		 * Sets scene for the objects to be added to
+		 * @param {THREE.Scene} sc 
+		 */
 		setScene: function (sc) {
 			scene = sc;
 		},
 
+		/**
+		 * Adds object to the manager and tries to load it. When it's loaded, executes callback cb.
+		 * @param {String}   name Object's identificator
+		 * @param {String}   path Path to object's model to be loaded
+		 * @param {Function} cb   Callback executed after the model is loaded with this object as an argument.
+		 */
 		addObject: function (name, path, cb) {
 			if (!scene) {
 				throw new Error("objectManager: Scene was not defined!");
@@ -58,6 +72,11 @@ var objectManager = (function () {
 			}
 		},
 
+		/**
+		 * 
+		 * @param  {String} name Object's identificator
+		 * @return {THREE.Mesh}      Reference to the object
+		 */
 		getByName: function (name) {
 			return objects[name];
 		},
@@ -71,9 +90,10 @@ var objectManager = (function () {
 				delete objects[name];
 			}
 		},
+
 		/**
 		 * Pushes back callback functions which are to be executed when all models are loaded.
-		 * @param  {Function} cb [Callback function to be executed with all objects as an argument]
+		 * @param  {Function} cb Callback function to be executed with all objects as an argument
 		 */
 		onAllLoaded: (function () {
 			var cbs = [];
@@ -97,6 +117,9 @@ var objectManager = (function () {
 	return C;
 }());
 
+/**
+ * Reference objectManager.getByName through $ alias
+ */
 var $ = function(name) {
 	return objectManager.getByName(name);
 };
