@@ -3,6 +3,7 @@
 var scene;
 var projector;
 var camera;
+var light;
 
 var player = {
 	state : 'idle',
@@ -144,15 +145,14 @@ window.addEventListener("load", function () {
 		obj.receiveShadow = true;
 	});
 
-	// Lights
-	var light = new THREE.SpotLight( 0xffffdd, 1, 0, Math.PI, 1 );
-	light.position.set( 30, 30, 30 );
-	light.target.position.set( 0, 0, 0 );
+	light = new THREE.SpotLight( 0xffffdd, 1, 0, Math.PI, 1 );
+	light.position.set(30, 30, 30);
+	light.target.position.set(0, 0, 0);
 
 	light.castShadow = true;
 
 	light.shadowCameraNear = 1;
-	light.shadowCameraFar = 1000;
+	light.shadowCameraFar = 300;
 	//light.shadowCameraFov = 70;
 
 	light.shadowCameraVisible = true;
@@ -160,14 +160,13 @@ window.addEventListener("load", function () {
 	//light.shadowBias = 0.0001;
 	light.shadowDarkness = 1.0;
 
-	var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 1024;
+	var SHADOW_MAP_WIDTH = 8192, SHADOW_MAP_HEIGHT = 4096;
 
 	light.shadowMapWidth = SHADOW_MAP_WIDTH;
 	light.shadowMapHeight = SHADOW_MAP_HEIGHT;
 
 	scene.add( light );
 	
-	scene.add(light);
 	var pointLight2 = new THREE.SpotLight(0xFFaaaa);
 	pointLight2.position.x = 10;
 	pointLight2.position.y = 50;
@@ -278,9 +277,13 @@ window.addEventListener("load", function () {
 	function contextMenu(event) {
 		return false;
 	}
+	function mouseWheel(event) {
+		camera.position.y -= (event.wheelDelta / 120);
+	}
 			
 	window.addEventListener('resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
+	window.addEventListener('mousewheel', mouseWheel);
 	window.oncontextmenu = contextMenu;
 	// Uncomment that to turn on fullscreen
 	/*window.addEventListener('click', function onWindowClick () {```
