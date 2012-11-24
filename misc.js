@@ -1,5 +1,5 @@
 /*global THREE: false */
-/*jslint es5: true, nomen: true, vars: true, browser: true */
+/*jslint es5: true, nomen: true, plusplus: true, vars: true, browser: true */
 function direction(a, b) {
 	"use strict";
 	var dx,
@@ -24,7 +24,9 @@ var objectManager = (function () {
 	"use strict";
 	var objects = {},
 		C,
-		scene;
+		scene,
+		toBeLoaded = 0,
+		loaded = 0;
 
 	C = {
 		loaderJSON: new THREE.JSONLoader(),
@@ -38,11 +40,17 @@ var objectManager = (function () {
 				throw new Error("objectManager: Scene was not defined!");
 			}
 			if (!objects[name]) {
+				++toBeLoaded;
+				objects[name] = true; // loading
 				this.loaderJSON.load(path, function (geometry, materials) {
 					objects[name] = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
 					scene.add(objects[name]);
+					++loaded;
 					if (cb && typeof cb === "function") {
 						cb(objects[name]);
+					}
+					if (toBeLoaded === loaded) {
+						C.onAllLoaded(true);
 					}
 				});
 			} else {
@@ -62,7 +70,25 @@ var objectManager = (function () {
 				scene.remove(objects[name]);
 				delete objects[name];
 			}
-		}
+		},
+
+		onAllLoaded: (function () {
+			var cbs = [];
+			return function (cb) {
+				if (!cb) {
+					throw new Error("objectManager: No callback given!");
+				}
+				if (typeof cb === "function") {
+					cbs.push(cb);
+				}
+				if (loaded && loaded === toBeLoaded) {
+					for (var i = 0; i < cbs.length; ++i) {
+						cbs[i](objects);
+					}
+					cbs.length = 0;
+				}
+			};
+		}())
 	};
 
 	return C;
