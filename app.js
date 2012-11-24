@@ -1,5 +1,5 @@
 /*global THREE: false */
-/*jslint browser: true, nomen: true */
+/*jslint es5: true, nomen: true, vars: true, browser: true */
 var scene;
 var object;
 var projector;
@@ -19,37 +19,10 @@ var player = {
 		
 		player.target.x = mapX;
 		player.target.z = mapZ;
-	},
-};
-
-var objectManager = {
-	loaderJSON : new THREE.JSONLoader(),
-	objects : { },
-
-	addObject : function (name, path) {
-		if (this.objects[name] == null) {
-			this.loaderJSON.load(
-				path,
-				function (geometry, materials) {
-					this.objects[name] = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-					scene.add(this.objects[name]);
-				}.bind(this)
-			);
-			
-		}
-	},
-	
-	getByName : function (name) {
-		return this.objects[name];
-	},
-
-	removeObject : function (name) {
-		if (this.objects[name]) {
-			scene.remove(this.objects[name]);
-			this.objects[name] = null;
-		}
 	}
 };
+
+
 
 function normalisedMouseToPlane (mouseX, mouseY) {
 	var
@@ -88,6 +61,7 @@ window.addEventListener("load", function () {
 
 	// Scene
 	scene = new THREE.Scene();
+	objectManager.setScene(scene);
 	
 	// Camera
 	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
