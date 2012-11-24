@@ -2,70 +2,94 @@
 /*jslint browser: true, nomen: true */
 var scene;
 var object;
+var projector;
+var camera;
+var cube;
 
 var player = {
 	state : 'idle',
 	target : {
 		x : 0,
 		z : 0
+	},
+	
+	move : function (mapX, mapZ) {
+		cube.position.x = mapX;
+		cube.position.z = mapZ;
+		player.state = 'moving';
+		
+		player.target.x = mapX;
+		player.target.z = mapZ;
 	}
 };
 
-function direction(a, b) {
-	var dx = b.x - a.x;
-	var dz = b.z - a.z;
-	return Math.atan2(dz, dx);
-}
-function distance(a, b) {
-	var dx = b.x - a.x;
-	var dz = b.z - a.z;
-	return Math.sqrt(dx * dx + dz * dz);
+function normalisedMouseToPlane(mouseX, mouseY) {
+	var 
+		startVector = new THREE.Vector3(),
+		endVector = new THREE.Vector3(),
+		dirVector = new THREE.Vector3(),
+		goalVector = new THREE.Vector3(),
+		t;
+
+	startVector.set( mouseX, mouseY, -1.0 );
+	endVector.set( mouseX, mouseY, 1.0 );
+
+	// Convert back to 3D world coordinates
+	startVector = projector.unprojectVector( startVector, camera );
+	endVector = projector.unprojectVector( endVector, camera );
+
+	// Get direction from startVector to endVector
+	dirVector.sub( endVector, startVector );
+	dirVector.normalize();
+
+	// Find intersection where y = 0
+	t = startVector.y / - ( dirVector.y );
+
+	// Find goal point
+	goalVector.set( startVector.x + t * dirVector.x,
+					startVector.y + t * dirVector.y,
+					startVector.z + t * dirVector.z );
+	return goalVector;
 }
 
 window.addEventListener("load", function () {
 	"use strict";
 	
+	// Keyboard input
 	var keyboard = new THREEx.KeyboardState();
 	
+	// Scene
 	scene = new THREE.Scene();
-	var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+	
+	// Camera
+	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+	camera.position.z = 15;
+	camera.position.y = 20;
+	camera.rotation.x = -1.0;
 	scene.add(camera);
 	
 	// point-and-click
+	projector = new THREE.Projector();
 	var
-		projector = new THREE.Projector(),
 		p3D = new THREE.Vector3(25, 15, 9),
 		p2D;
-
-//	p2D = projector.projectVector(p3D, camera);
-//	p3D = projector.unprojectVector(p2D, camera);
-		
-/*	var controls = new THREE.TrackballControls( camera );
-	controls.target.set(0, 0, 0);
-	controls.rotateSpeed = 1.0;
-	controls.zoomSpeed = 1.0;
-	controls.panSpeed = 0.8;
-	controls.noZoom = false;
-	controls.noPan = false;
-
-	controls.staticMoving = false;
-	controls.dynamicDampingFactor = 0.15;
-
-	controls.keys = [ 65, 83, 68 ];*/
 	
+	// Renderer
 	var renderer = new THREE.WebGLRenderer();
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	document.body.appendChild(renderer.domElement);
 
+	// Cube (currently used as a waypoint)
 	var geometry = new THREE.CubeGeometry(1, 1, 1);
 	var material = new THREE.MeshPhongMaterial({color: 0xaaaaaa});
 	var blueMaterial = new THREE.MeshPhongMaterial({color: 0x5555FF});
-	var cube = new THREE.Mesh(geometry, material);
+	cube = new THREE.Mesh(geometry, material);
 	cube.position.y += 1;
 	cube.position.x += 5;
 	cube.name = 'cube';
 	scene.add(cube);
 	
+	// Second cube (possible to lift up to the air)
 	var pickerGeometry = new THREE.CubeGeometry(1, 1, 1);
 	pickerGeometry.computeCentroids();
 	var picker = new THREE.Mesh(geometry, blueMaterial);
@@ -74,10 +98,7 @@ window.addEventListener("load", function () {
 	picker.name = 'picker';
 	scene.add(picker);
 	
-	camera.position.z = 15;
-	camera.position.y = 20;
-	camera.rotation.x = -1.0;
-	
+	// Grass Plane
 	var planeGeometry = new THREE.CubeGeometry(20, 0.1, 20);
 	var planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg");
 	var planeMaterial = new THREE.MeshLambertMaterial({map: planeMap });
@@ -85,7 +106,7 @@ window.addEventListener("load", function () {
 	plane.name = 'plane';
 	scene.add(plane);
 
-	
+	// Mech model
 	var loader = new THREE.OBJLoader();
 	loader.addEventListener( 'load', function (event) {
 		object = event.content;
@@ -103,9 +124,9 @@ window.addEventListener("load", function () {
 		//object.children[0].geometsdry.computeCentroids();
 		scene.add( object );
 	});
-
 	loader.load( 'models/TV.obj' );
 	
+	// Block of flats
 	var jsloader = new THREE.JSONLoader();
 	var mesh;
     jsloader.load(
@@ -126,7 +147,7 @@ window.addEventListener("load", function () {
 		}
 	);
 
-	
+	// Lights
 	var pointLight1 = new THREE.PointLight(0xaaFFaa);
 	pointLight1.position.x = 130;
 	pointLight1.position.y = 50;
@@ -247,43 +268,15 @@ window.addEventListener("load", function () {
 		
 		if (!hitSomething)
 		{
-			var startVector = new THREE.Vector3(),
-				endVector = new THREE.Vector3(),
-				dirVector = new THREE.Vector3(),
-				goalVector = new THREE.Vector3(),
-				t;
-
-			startVector.set( x, y, -1.0 );
-			endVector.set( x, y, 1.0 );
-
-			// Convert back to 3D world coordinates
-			startVector = projector.unprojectVector( startVector, camera );
-			endVector = projector.unprojectVector( endVector, camera );
-		
-			// Get direction from startVector to endVector
-			dirVector.sub( endVector, startVector );
-			dirVector.normalize();
-			
-			// Find intersection where y = 0
-			t = startVector.y / - ( dirVector.y );
-
-			// Find goal point
-			goalVector.set( startVector.x + t * dirVector.x,
-			startVector.y + t * dirVector.y,
-			startVector.z + t * dirVector.z );
-			
-			cube.position.x = goalVector.x;
-			cube.position.z = goalVector.z;
-			player.state = 'moving';
-			
-			player.target.x = goalVector.x;
-			player.target.z = goalVector.z;
+			var planeTarget = normalisedMouseToPlane(x, y);
+			player.move(planeTarget.x, planeTarget.z);
 		}
 	}
 			
 	window.addEventListener('resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
-	/*window.addEventListener('click', function onWindowClick () {
+	// Uncomment that to turn on fullscreen
+	/*window.addEventListener('click', function onWindowClick () {```
 		if (THREEx.FullScreen.activated()) {
 		    window.removeEventListener('click', onWindowClick);
 		} else {
