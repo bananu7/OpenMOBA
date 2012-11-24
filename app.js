@@ -116,24 +116,6 @@ window.addEventListener("load", function () {
 	objectManager.addObject("blok", "models/Blok/Blok.json");
 	console.log (objectManager);
 	//objectManager.getByName("blok").position.x += 30;
-	/*	
-    jsloader.load(
-		"models/Blok/Blok.json",
-		function(geometry, materials) {
-			//console.log(geometry);
-			//console.log(materials);
-			//mesh = new THREE.Mesh(geometry, new THREE.MeshNormalMaterial({overdraw:true}));
-			mesh = new THREE.Mesh(geometry, new THREE.MeshFaceMaterial(materials));
-			//var mesh = new THREE.Mesh(geometry, blueMaterial);
-			//mesh.position.x += 50;
-			scene.add(mesh);
-			
-			mesh.position.x += 30;
-			mesh.scale.x = 0.5;
-			mesh.scale.y = 0.5;
-			mesh.scale.z = 0.5;
-		}
-	);*/
 	
 	jsloader.load(
 		"models/TV.json",
@@ -272,10 +254,16 @@ window.addEventListener("load", function () {
 			var planeTarget = normalisedMouseToPlane(x, y);
 			player.move(planeTarget.x, planeTarget.z);
 		}
+		return true;
+	}
+	
+	function contextMenu(event) {
+		return false;
 	}
 			
 	window.addEventListener('resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
+	window.oncontextmenu = contextMenu;
 	// Uncomment that to turn on fullscreen
 	/*window.addEventListener('click', function onWindowClick () {```
 		if (THREEx.FullScreen.activated()) {
