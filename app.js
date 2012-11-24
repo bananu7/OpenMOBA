@@ -1,7 +1,6 @@
 /*global THREE: false */
 /*jslint es5: true, nomen: true, vars: true, browser: true */
 var scene;
-var object;
 var projector;
 var camera;
 var cube;
@@ -21,8 +20,6 @@ var player = {
 		player.target.z = mapZ;
 	}
 };
-
-
 
 function normalisedMouseToPlane (mouseX, mouseY) {
 	var
@@ -107,28 +104,17 @@ window.addEventListener("load", function () {
 		plane = new THREE.Mesh(planeGeometry, planeMaterial);
 	plane.name = 'plane';
 	scene.add(plane);
-	
-	// Block of flats
-	var
-		jsloader = new THREE.JSONLoader(),
-		mesh;
 		
-	objectManager.addObject("blok", "models/Blok/Blok.json");
-	console.log (objectManager);
-	//objectManager.getByName("blok").position.x += 30;
+	objectManager.addObject("blok", "models/Blok/Blok.json", function (obj) {
+		obj.position.x += 30;
+	});
 	
-	jsloader.load(
-		"models/TV.json",
-		function (geometry, materials) {
-			object = new THREE.Mesh(geometry, blueMaterial);
-			scene.add(object);
-			object.position.y = 0;
-			object.scale.x = 2;
-			object.scale.y = 2;
-			object.scale.z = 2;
-			object.name = 'mech';
-		}
-	);
+	objectManager.addObject("mech", "models/TV.json", function (obj) {
+		obj.position.y = 0;
+		obj.scale.x = 2;
+		obj.scale.y = 2;
+		obj.scale.z = 2;
+	});
 
 	// Lights
 	var pointLight1 = new THREE.PointLight(0xaaFFaa);
@@ -192,12 +178,14 @@ window.addEventListener("load", function () {
 	
 	function updatePlayer() {
 		if (player.state === 'moving') {
-			var dir = direction(object.position, player.target);
-			object.rotation.y = -dir;
-			object.position.x += Math.cos(dir) * 0.2;
-			object.position.z += Math.sin(dir) * 0.2;
+			var mech = $("mech");
 			
-			if (distance(object.position, player.target) <= 1)
+			var dir = direction(mech.position, player.target);
+			mech.rotation.y = -dir;
+			mech.position.x += Math.cos(dir) * 0.2;
+			mech.position.z += Math.sin(dir) * 0.2;
+			
+			if (distance(mech.position, player.target) <= 1)
 			{
 				player.state = 'idle';
 				cube.position.x = 10000;

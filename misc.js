@@ -68,3 +68,7 @@ var objectManager = (function () {
 	return C;
 }());
 
+var $ = function(name) {
+	return objectManager.getByName(name);
+};
+
