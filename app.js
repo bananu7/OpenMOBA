@@ -222,6 +222,7 @@ window.addEventListener("load", function () {
 				INTERSECTED.material.emissive.setHex( 0xff0000 );
 			}*/
 			console.log("HIT! " + target.name);
+			return true;
 		} 
 		else {
 			console.log("missed");
@@ -231,6 +232,7 @@ window.addEventListener("load", function () {
 
 			INTERSECTED = null;
 			*/
+			return false;
 		}
 	}
 	
@@ -241,50 +243,53 @@ window.addEventListener("load", function () {
 		x = ( x / window.innerWidth ) * 2 - 1;
 		y = 1 - ( y / window.innerHeight ) * 2;
 		
-		testForPicking(x, y);
+		var hitSomething = testForPicking(x, y);
 		
-		var startVector = new THREE.Vector3(),
-			endVector = new THREE.Vector3(),
-			dirVector = new THREE.Vector3(),
-			goalVector = new THREE.Vector3(),
-			t;
+		if (!hitSomething)
+		{
+			var startVector = new THREE.Vector3(),
+				endVector = new THREE.Vector3(),
+				dirVector = new THREE.Vector3(),
+				goalVector = new THREE.Vector3(),
+				t;
 
-		startVector.set( x, y, -1.0 );
-		endVector.set( x, y, 1.0 );
+			startVector.set( x, y, -1.0 );
+			endVector.set( x, y, 1.0 );
 
-		// Convert back to 3D world coordinates
-		startVector = projector.unprojectVector( startVector, camera );
-		endVector = projector.unprojectVector( endVector, camera );
-	
-		// Get direction from startVector to endVector
-		dirVector.sub( endVector, startVector );
-		dirVector.normalize();
+			// Convert back to 3D world coordinates
+			startVector = projector.unprojectVector( startVector, camera );
+			endVector = projector.unprojectVector( endVector, camera );
 		
-		// Find intersection where y = 0
-		t = startVector.y / - ( dirVector.y );
+			// Get direction from startVector to endVector
+			dirVector.sub( endVector, startVector );
+			dirVector.normalize();
+			
+			// Find intersection where y = 0
+			t = startVector.y / - ( dirVector.y );
 
-		// Find goal point
-		goalVector.set( startVector.x + t * dirVector.x,
-		startVector.y + t * dirVector.y,
-		startVector.z + t * dirVector.z );
-		
-		cube.position.x = goalVector.x;
-		cube.position.z = goalVector.z;
-		player.state = 'moving';
-		
-		player.target.x = goalVector.x;
-		player.target.z = goalVector.z;
+			// Find goal point
+			goalVector.set( startVector.x + t * dirVector.x,
+			startVector.y + t * dirVector.y,
+			startVector.z + t * dirVector.z );
+			
+			cube.position.x = goalVector.x;
+			cube.position.z = goalVector.z;
+			player.state = 'moving';
+			
+			player.target.x = goalVector.x;
+			player.target.z = goalVector.z;
+		}
 	}
 			
 	window.addEventListener('resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
-	window.addEventListener('click', function onWindowClick () {
+	/*window.addEventListener('click', function onWindowClick () {
 		if (THREEx.FullScreen.activated()) {
 		    window.removeEventListener('click', onWindowClick);
 		} else {
 		    //THREEx.FullScreen.request();
 		}
-	});
+	});*/
 
 	var stats = new Stats();
 	stats.setMode(0); // 0: fps, 1: ms
