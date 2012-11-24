@@ -35,7 +35,7 @@ var objectManager = (function () {
 
 		addObject: function (name, path, cb) {
 			if (!scene) {
-				throw new Error("Scene was not defined!");
+				throw new Error("objectManager: Scene was not defined!");
 			}
 			if (!objects[name]) {
 				this.loaderJSON.load(path, function (geometry, materials) {
@@ -46,7 +46,7 @@ var objectManager = (function () {
 					}
 				});
 			} else {
-				throw new Error("Object of this name already exists!");
+				throw new Error("objectManager: Object of this name already exists!");
 			}
 		},
 
@@ -56,7 +56,7 @@ var objectManager = (function () {
 
 		removeObject: function (name) {
 			if (!scene) {
-				throw new Error("Scene was not defined!");
+				throw new Error("objectManager: Scene was not defined!");
 			}
 			if (objects[name]) {
 				scene.remove(objects[name]);

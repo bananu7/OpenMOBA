@@ -113,7 +113,9 @@ window.addEventListener("load", function () {
 		jsloader = new THREE.JSONLoader(),
 		mesh;
 		
+	objectManager.onAllLoaded(function () { console.log(arguments); });
 	objectManager.addObject("blok", "models/Blok/Blok.json");
+	objectManager.addObject("blok2", "models/Blok/Blok.json");
 	console.log (objectManager);
 	//objectManager.getByName("blok").position.x += 30;
 	/*	
