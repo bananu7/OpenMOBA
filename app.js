@@ -132,9 +132,6 @@ window.addEventListener("load", function () {
 	
 	objectManager.addObject("mech", "models/TV.json", function (obj) {
 		obj.position.y = 0;
-		obj.scale.x = 2;
-		obj.scale.y = 2;
-		obj.scale.z = 2;
 		obj.castShadow = true;
 		obj.receiveShadow = true;
 	});
@@ -151,16 +148,17 @@ window.addEventListener("load", function () {
 
 	light.castShadow = true;
 
-	light.shadowCameraNear = 1;
-	light.shadowCameraFar = 300;
-	//light.shadowCameraFov = 70;
+	light.shadowCameraNear = 20;
+	light.shadowCameraFar = 100;
 
 	light.shadowCameraVisible = true;
 
-	//light.shadowBias = 0.0001;
-	light.shadowDarkness = 1.0;
+	// Tune if the shadows start to appear on objects
+	// or appear in offset on the plane
+	light.shadowBias = -0.005;
+	light.shadowDarkness = 0.5;
 
-	var SHADOW_MAP_WIDTH = 8192, SHADOW_MAP_HEIGHT = 4096;
+	var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 2048;
 
 	light.shadowMapWidth = SHADOW_MAP_WIDTH;
 	light.shadowMapHeight = SHADOW_MAP_HEIGHT;
