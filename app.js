@@ -90,6 +90,8 @@ window.addEventListener("load", function () {
 	
 	// Renderer
 	var renderer = new THREE.WebGLRenderer();
+	renderer.shadowMapEnabled	= true;
+	renderer.shadowMapSoft		= true;
 	renderer.setSize(window.innerWidth, window.innerHeight);
 	document.body.appendChild(renderer.domElement);
 
@@ -106,19 +108,25 @@ window.addEventListener("load", function () {
 	picker.position.y += 1;
 	picker.position.x += 5;
 	picker.name = 'picker';
+	picker.castShadow = true;
+	picker.receiveShadow = true;
 	scene.add(picker);
 	
 	// Grass Plane
 	var 
-		planeGeometry = new THREE.CubeGeometry(20, 0.1, 20),
+		planeGeometry = new THREE.CubeGeometry(200, 0.1, 200),
 		planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg"),
-		planeMaterial = new THREE.MeshLambertMaterial({map: planeMap }),
+		//planeMaterial = new THREE.MeshLambertMaterial({map: planeMap }),
+		planeMaterial = new THREE.MeshPhongMaterial(0x333333),
 		plane = new THREE.Mesh(planeGeometry, planeMaterial);
 	plane.name = 'plane';
+	plane.receiveShadow = true;
 	scene.add(plane);
 		
 	objectManager.addObject("blok", "models/Blok/Blok.json", function (obj) {
-		obj.position.x += 30;
+		obj.position.x -= 30;
+		obj.castShadow = true;
+		obj.receiveShadow = true;
 	});
 	
 	objectManager.addObject("mech", "models/TV.json", function (obj) {
@@ -126,28 +134,50 @@ window.addEventListener("load", function () {
 		obj.scale.x = 2;
 		obj.scale.y = 2;
 		obj.scale.z = 2;
+		obj.castShadow = true;
+		obj.receiveShadow = true;
 	});
 	
 	objectManager.addObject("waypoint", "models/Waypoint.json", function (obj) {
 		obj.position.y = 3;
+		obj.castShadow = true;
+		obj.receiveShadow = true;
 	});
 
 	// Lights
-	var pointLight1 = new THREE.PointLight(0xaaFFaa);
-	pointLight1.position.x = 130;
-	pointLight1.position.y = 50;
-	pointLight1.position.z = 10;
-	scene.add(pointLight1);
-	var pointLight2 = new THREE.PointLight(0xFFaaaa);
+	var light = new THREE.SpotLight( 0xffffdd, 1, 0, Math.PI, 1 );
+	light.position.set( 30, 30, 30 );
+	light.target.position.set( 0, 0, 0 );
+
+	light.castShadow = true;
+
+	light.shadowCameraNear = 1;
+	light.shadowCameraFar = 1000;
+	//light.shadowCameraFov = 70;
+
+	light.shadowCameraVisible = true;
+
+	//light.shadowBias = 0.0001;
+	light.shadowDarkness = 1.0;
+
+	var SHADOW_MAP_WIDTH = 2048, SHADOW_MAP_HEIGHT = 1024;
+
+	light.shadowMapWidth = SHADOW_MAP_WIDTH;
+	light.shadowMapHeight = SHADOW_MAP_HEIGHT;
+
+	scene.add( light );
+	
+	scene.add(light);
+	var pointLight2 = new THREE.SpotLight(0xFFaaaa);
 	pointLight2.position.x = 10;
 	pointLight2.position.y = 50;
 	pointLight2.position.z = 130;
-	scene.add(pointLight2);
+	//scene.add(pointLight2);
 	var pointLight2 = new THREE.PointLight(0xaaaaFF);
 	pointLight2.position.x = 130;
 	pointLight2.position.y = 50;
 	pointLight2.position.z = 130;
-	scene.add(pointLight2);
+	//scene.add(pointLight2);
 
 	var prevTime = Date.now();
 	var curTime = Date.now();
@@ -202,6 +232,9 @@ window.addEventListener("load", function () {
 			var target = intersects[0].object;
 			if (target.name === 'picker')
 				target.position.y += 0.5;
+				
+			if (target.name === 'plane')
+				return false;
 			/*if ( INTERSECTED != intersects[ 0 ].object ) {
 				if ( INTERSECTED )
 					INTERSECTED.material.emissive.setHex( INTERSECTED.currentHex );
