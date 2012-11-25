@@ -1,0 +1,68 @@
+#
+## Alias OBJ Material File
+# Exported from SketchUp, (c) 2000-2006 Google, Inc.
+
+newmtl tekstura_S_300
+Ka 0.000000 0.000000 0.000000
+Kd 0.513725 0.447059 0.329412
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/tekstura_S_300.jpg
+
+newmtl tekstura_W_300
+Ka 0.000000 0.000000 0.000000
+Kd 0.580392 0.494118 0.313725
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/tekstura_W_300.jpg
+
+newmtl tekstura_E_300
+Ka 0.000000 0.000000 0.000000
+Kd 0.580392 0.494118 0.313725
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/tekstura_E_300.jpg
+
+newmtl tekstura_dach
+Ka 0.000000 0.000000 0.000000
+Kd 0.764706 0.756863 0.803922
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/tekstura_dach.jpg
+
+newmtl Color_006
+Ka 0.000000 0.000000 0.000000
+Kd 0.337255 0.337255 0.337255
+Ks 0.330000 0.330000 0.330000
+
+newmtl Concrete_Form_4x8
+Ka 0.000000 0.000000 0.000000
+Kd 0.654902 0.666667 0.658824
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/Concrete_Form_4x8.jpg
+
+newmtl klatka_ok
+Ka 0.000000 0.000000 0.000000
+Kd 0.317647 0.298039 0.266667
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/klatka_ok.jpg
+
+newmtl FrontColor
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.330000 0.330000 0.330000
+
+newmtl klatka_ok1_
+Ka 0.000000 0.000000 0.000000
+Kd 0.317647 0.298039 0.266667
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/klatka_ok1_.jpg
+
+newmtl klatka_ok2_
+Ka 0.000000 0.000000 0.000000
+Kd 0.317647 0.298039 0.266667
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/klatka_ok2_.jpg
+
+newmtl tekstura_P_n_300
+Ka 0.000000 0.000000 0.000000
+Kd 0.545098 0.474510 0.352941
+Ks 0.330000 0.330000 0.330000
+map_Kd Blok/tekstura_P_n_300.jpg
+
