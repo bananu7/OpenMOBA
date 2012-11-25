@@ -5,6 +5,15 @@ var projector;
 var camera;
 var light;
 
+var objectManager = new ObjectManager();
+/**
+ * Alias for objectManager.getByName
+ * @see objectManager.getByName
+ */
+var $ = $ || function(name) {
+	return objectManager.getByName(name);
+};
+
 var player = {
 	state : 'idle',
 	target : {
@@ -77,7 +86,6 @@ window.addEventListener("load", function () {
 
 	// Scene
 	scene = new THREE.Scene();
-	objectManager = new ObjectManager();
 	objectManager.setScene(scene);
 	
 	// Camera

@@ -19,7 +19,7 @@ var ObjectManager = function () {
 	var loaded = 0;
 
 	/**
-	 * @exports C as objectManager
+	 * @exports C as ObjectManager
 	 */
 	C = {
 		/**
@@ -116,12 +116,4 @@ var ObjectManager = function () {
 	};
 
 	return C;
-};
-
-/**
- * Alias for objectManager.getByName
- * @see objectManager.getByName
- */
-var $ = $ || function(name) {
-	return objectManager.getByName(name);
 };
