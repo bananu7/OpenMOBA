@@ -71,6 +71,9 @@ var objectManager = (function () {
 		 * @return {THREE.Mesh}      Reference to the object
 		 */
 		getByName: function (name) {
+			if (typeof objects[name] === "boolean") {
+				throw new Error("objectManager: Object is not loaded yet! Use onAllLoaded method instead.")
+			}
 			return objects[name];
 		},
 
