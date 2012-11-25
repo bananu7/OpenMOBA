@@ -1,5 +1,6 @@
 /*global THREE: false */
 /*jslint es5: true, nomen: true, plusplus: true, vars: true, browser: true */
+
 function direction(a, b) {
 	"use strict";
 	var dx,
@@ -21,23 +22,35 @@ function distance(a, b) {
 }
 
 /**
- * Own manager/loader of THREE objects
- * @type {Object}
+ * @class
  */
 var objectManager = (function () {
 	"use strict";
-	var objects = {},
-		C,
-		scene,
-		toBeLoaded = 0,
-		loaded = 0;
+	/** @ignore */
+	var C;
 
+	/** @private */
+	var objects = {};
+	/** @private */
+	var scene;
+	/** @private */
+	var toBeLoaded = 0;
+	/** @private */
+	var loaded = 0;
+
+	/**
+	 * @exports C as objectManager
+	 */
 	C = {
+		/**
+		 * Default THREE JSON loader
+		 * @type {THREE}
+		 */
 		loaderJSON: new THREE.JSONLoader(),
 
 		/**
 		 * Sets scene for the objects to be added to
-		 * @param {THREE.Scene} sc 
+		 * @param {THREE.Scene} sc Scene
 		 */
 		setScene: function (sc) {
 			scene = sc;
@@ -81,6 +94,10 @@ var objectManager = (function () {
 			return objects[name];
 		},
 
+		/**
+		 * Removed object of given identificator from scene and from object manager
+		 * @param  {String} name Object's identificator
+		 */
 		removeObject: function (name) {
 			if (!scene) {
 				throw new Error("objectManager: Scene was not defined!");
@@ -94,6 +111,7 @@ var objectManager = (function () {
 		/**
 		 * Pushes back callback functions which are to be executed when all models are loaded.
 		 * @param  {Function} cb Callback function to be executed with all objects as an argument
+		 * @function
 		 */
 		onAllLoaded: (function () {
 			var cbs = [];
@@ -118,9 +136,10 @@ var objectManager = (function () {
 }());
 
 /**
- * Reference objectManager.getByName through $ alias
+ * Alias for objectManager.getByName
+ * @see objectManager.getByName
  */
-var $ = function(name) {
+var $ = $ || function(name) {
 	return objectManager.getByName(name);
 };
 
