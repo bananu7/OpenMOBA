@@ -4,7 +4,7 @@
 /**
  * @class
  */
-var objectManager = (function () {
+var ObjectManager = function () {
 	"use strict";
 	/** @ignore */
 	var C;
@@ -72,7 +72,7 @@ var objectManager = (function () {
 		 */
 		getByName: function (name) {
 			if (typeof objects[name] === "boolean") {
-				throw new Error("objectManager: Object is not loaded yet! Use onAllLoaded method instead.")
+				throw new Error("objectManager: Object is not loaded yet! Use onAllLoaded method instead.");
 			}
 			return objects[name];
 		},
@@ -116,7 +116,7 @@ var objectManager = (function () {
 	};
 
 	return C;
-}());
+};
 
 /**
  * Alias for objectManager.getByName

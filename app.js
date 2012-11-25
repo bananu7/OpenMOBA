@@ -77,6 +77,7 @@ window.addEventListener("load", function () {
 
 	// Scene
 	scene = new THREE.Scene();
+	objectManager = new ObjectManager();
 	objectManager.setScene(scene);
 	
 	// Camera
