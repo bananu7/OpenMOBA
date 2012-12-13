@@ -14,6 +14,8 @@ var $ = $ || function(name) {
 	return objectManager.getByName(name);
 };
 
+var castingState = false;
+
 var player = {
 	state : 'idle',
 	target : {
@@ -125,7 +127,7 @@ window.addEventListener("load", function () {
 	// Grass Plane
 	var 
 		planeGeometry = new THREE.CubeGeometry(200, 0.1, 200),
-		planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg"),
+		//planeMap = THREE.ImageUtils.loadTexture("textures/grass.jpg"),
 		//planeMaterial = new THREE.MeshLambertMaterial({map: planeMap }),
 		planeMaterial = new THREE.MeshPhongMaterial(0x333333),
 		plane = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -150,6 +152,14 @@ window.addEventListener("load", function () {
 		obj.castShadow = true;
 		obj.receiveShadow = true;
 	});
+	
+	var spriteGeometry = new THREE.PlaneGeometry(10, 10);
+	var mapB = THREE.ImageUtils.loadTexture( "textures/aoe.png" );
+	var spriteMat = new THREE.MeshBasicMaterial({map: mapB, transparent: true });
+	var sprite = new THREE.Mesh(spriteGeometry, spriteMat);
+	sprite.rotation.x = -Math.PI * 0.5;
+	sprite.position.y = 0.2;
+	scene.add(sprite);
 
 	light = new THREE.SpotLight( 0xffffdd, 1, 0, Math.PI, 1 );
 	light.position.set(30, 30, 30);
@@ -264,6 +274,20 @@ window.addEventListener("load", function () {
 		}
 	}
 	
+	function onMouseMove(event) {
+		if (castingState) {
+			var x = event.clientX;
+			var y = event.clientY;
+			
+			x = (x / window.innerWidth) * 2 - 1;
+			y = 1 - (y / window.innerHeight) * 2;
+			
+			var planeTarget = normalisedMouseToPlane(x, y);
+			sprite.position.x = planeTarget.x;
+			sprite.position.z = planeTarget.z;
+		}
+	}
+	
 	function onMouseDown(event) {
 		var x = event.clientX;
 		var y = event.clientY;
@@ -271,12 +295,20 @@ window.addEventListener("load", function () {
 		x = (x / window.innerWidth) * 2 - 1;
 		y = 1 - (y / window.innerHeight) * 2;
 		
-		var hitSomething = testForPicking(x, y);
+		var planeTarget = normalisedMouseToPlane(x, y);
 		
-		if (!hitSomething)
-		{
-			var planeTarget = normalisedMouseToPlane(x, y);
-			player.move(planeTarget.x, planeTarget.z);
+		if (event.button == 0) { // LPM
+			var hitSomething = testForPicking(x, y);
+			
+			if (!hitSomething)
+			{
+				player.move(planeTarget.x, planeTarget.z);
+			}
+		}
+		else if (event.button = 2) { // PPM
+			castingState = !castingState;
+			sprite.position.x = planeTarget.x;
+			sprite.position.z = planeTarget.z;
 		}
 		return true;
 	}
@@ -290,6 +322,7 @@ window.addEventListener("load", function () {
 			
 	window.addEventListener('resize', onWindowResize);
 	window.addEventListener('mousedown', onMouseDown);
+	window.addEventListener('mousemove', onMouseMove);
 	window.addEventListener('mousewheel', mouseWheel);
 	window.oncontextmenu = contextMenu;
 	// Uncomment that to turn on fullscreen
