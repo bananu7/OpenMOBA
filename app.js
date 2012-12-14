@@ -151,7 +151,21 @@ window.addEventListener("load", function () {
 		obj.position.y = 3;
 		obj.castShadow = true;
 		obj.receiveShadow = true;
+		obj.behaviour = function () {
+			obj.rotation.y -= 0.05;
+		}
 	});
+	
+	objectManager.loadObjectCInfo("rocket", "models/rocket.json", function () {
+		this.position.x += 0.1;
+		this.position.z += 0.1;
+		this.rotation.y = Math.PI * -0.75;
+	});
+	
+	for (var i = 0; i < 10; ++i)
+	{
+		setTimeout(function(){objectManager.createObjectInstance("rocket")}, i * 1000);
+	};
 	
 	var spriteGeometry = new THREE.PlaneGeometry(10, 10);
 	var mapB = THREE.ImageUtils.loadTexture( "textures/aoe.png" );
@@ -205,8 +219,10 @@ window.addEventListener("load", function () {
 			while (curTime - prevTime > 16) {
 				checkKeyboard();
 				player.update();
-				$('waypoint').rotation.y -= 0.05;
+				//$('waypoint').rotation.y -= 0.05;
 				prevTime += 16;
+				
+				objectManager.updateAll();
 			}
 			renderer.render(scene, camera);
 			stats.end();
@@ -234,6 +250,15 @@ window.addEventListener("load", function () {
 		}
 		if (keyboard.pressed("D")) {
 			camera.position.x += 0.5;
+		}
+		if (keyboard.pressed("F")) {
+			window.addEventListener('click', function onWindowClick () {
+				if (THREEx.FullScreen.activated()) {
+					window.removeEventListener('click', onWindowClick);
+				} else {
+					THREEx.FullScreen.request();
+				}
+			});
 		}
 	}
 	
@@ -325,14 +350,6 @@ window.addEventListener("load", function () {
 	window.addEventListener('mousemove', onMouseMove);
 	window.addEventListener('mousewheel', mouseWheel);
 	window.oncontextmenu = contextMenu;
-	// Uncomment that to turn on fullscreen
-	/*window.addEventListener('click', function onWindowClick () {```
-		if (THREEx.FullScreen.activated()) {
-		    window.removeEventListener('click', onWindowClick);
-		} else {
-		    //THREEx.FullScreen.request();
-		}
-	});*/
 
 	var stats = new Stats();
 	stats.setMode(0); // 0: fps, 1: ms

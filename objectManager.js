@@ -11,6 +11,11 @@ var ObjectManager = function () {
 
 	/** @private */
 	var objects = {};
+	/**
+	 * The array that holds object "construction infos", not the objects themselves.
+	 * @private
+	 */
+	var objectCInfos = {};
 	/** @private */
 	var scene;
 	/** @private */
@@ -64,7 +69,66 @@ var ObjectManager = function () {
 				throw new Error("objectManager: Object of this name already exists!");
 			}
 		},
+		
+		/**
+		 * Loads object construction info, for objects that are instanced.
+		 * Does NOT add object to the scene and neither does require present scene.
+		 * @param {String}   name Object CInfo's identificator
+		 * @param {String}   path Path to object's model to be loaded
+		 * @param {Function} behaviour Function that becomes "Update" function of instances.
+		 */
+		loadObjectCInfo: function (name, path, behaviour) {
+			if (!objectCInfos[name])
+			{
+				objectCInfos[name] = {};
+				objectCInfos[name].queue = {};
+				
+				this.loaderJSON.load(path, function (geometry, materials) {
+					objectCInfos[name] = {};
+					objectCInfos[name].geometry = geometry;
+					objectCInfos[name].material = new THREE.MeshFaceMaterial(materials);
+					objectCInfos[name].count = 0;
+					objectCInfos[name].behaviour = behaviour;
+					objectCInfos[name].instances = {};
+				});
+			} else {
+				throw new Error("objectManager: CInfo with given name already loaded");
+			}
+		},
 
+		/**
+		 * Instances an object from preloaded CInfo
+		 * @param {String}   name Object CInfo's identifier
+		 * @return {THREE.Mesh}      Reference to the created object
+		 */
+		 
+		//* @param {Function} cb   Callback that will be run on a given instance, when it's loaded.
+		createObjectInstance: function(name) {
+			if (!scene) {
+				throw new Error("objectManager: Scene was not defined!");
+			}
+			if (objectCInfos[name])
+			{
+				var instanceNumber = objectCInfos[name].count;
+				var instance = new THREE.Mesh(objectCInfos[name].geometry, objectCInfos[name].material);
+					
+				if (objectCInfos[name].queue === null)
+				{
+					objectCInfos[name].instances[instanceNumber] = instance;
+					scene.add(instance);
+					instance.behaviour = objectCInfos[name].behaviour;
+					
+					objectCInfos[name].count += 1;
+					
+					return instance;
+				} else {
+				//	objectCInfos[name].queue .push_back(?) (instance);
+				}
+			} else {
+				throw new Error("objectManager: No preloaded CInfo with given name exists");
+			}
+		},
+		
 		/**
 		 * 
 		 * @param  {String} name Object's identificator
@@ -91,6 +155,21 @@ var ObjectManager = function () {
 			}
 		},
 
+		/**
+		 * Updates all objects that have defined update behaviour
+		 */
+		updateAll: function () {
+			for (var i in objects) {
+				if (objects[i].behaviour)
+					objects[i].behaviour();
+			}
+			for (var i in objectCInfos) {
+				for (var j in objectCInfos[i].instances)
+					if (objectCInfos[i].instances[j].behaviour)
+						objectCInfos[i].instances[j].behaviour();
+			}
+		},
+		
 		/**
 		 * Pushes back callback functions which are to be executed when all models are loaded.
 		 * @param  {Function} cb Callback function to be executed with all objects as an argument
