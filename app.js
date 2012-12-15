@@ -22,6 +22,11 @@ var player = {
 		x : 0,
 		z : 0
 	},	
+	
+	cooldowns : {
+		attack : 0
+	},
+	
 	move : function (mapX, mapZ) {
 		$('waypoint').position.y = 0;
 		$('waypoint').position.x = mapX;
@@ -30,7 +35,7 @@ var player = {
 		player.state = 'moving';
 		
 		player.target.x = mapX;
-		player.target.z = mapZ;
+		player.target.z = mapZ;	
 	},
 	
 	update : function () {
@@ -113,7 +118,7 @@ window.addEventListener("load", function () {
 		material = new THREE.MeshPhongMaterial({color: 0xaaaaaa}),
 		blueMaterial = new THREE.MeshPhongMaterial({color: 0x5555FF});
 	
-	// Second cube (possible to lift up to the air)
+	// Second cube (possible twwwo lift up to the air)
 	var pickerGeometry = new THREE.CubeGeometry(1, 1, 1);
 	pickerGeometry.computeCentroids();
 	var picker = new THREE.Mesh(geometry, blueMaterial);
@@ -156,15 +161,33 @@ window.addEventListener("load", function () {
 		}
 	});
 	
-	objectManager.loadObjectCInfo("rocket", "models/rocket.json", function () {
-		this.rotation.y = 0;
-		this.position.x += Math.cos(this.rotation.y + Math.PI * 0.5) * 0.1;
-		this.position.z += Math.sin(this.rotation.y + Math.PI * 0.5) * 0.1;
+	objectManager.loadObjectCInfo("rocket", "models/rocket.json", 
+	function (data) { // init function
+		this.rotation.y = Math.PI * (Math.random() * 2 - 1);
+		this.position.y = 2;
+		
+		if (data) {
+			if (data.x) { this.position.x = data.x; }
+			if (data.z) { this.position.z = data.z; }
+			if (data.rot_y) { this.rotation.y = data.rot_y; }
+		}
+		
+		this.castShadow = true;
+	},
+	function () { // behaviour function
+		this.position.x += Math.cos(-this.rotation.y - Math.PI * 0.5) * 0.5;
+		this.position.z += Math.sin(-this.rotation.y - Math.PI * 0.5) * 0.5;
+		
+		if (this.position.x > 10 || this.position.x < -10 
+		 || this.position.z > 10 || this.position.z < -10) {
+			return false;
+		}
+			
+		return true;
 	});
 	
-	for (var i = 0; i < 10; ++i)
-	{
-		setTimeout(function(){objectManager.createObjectInstance("rocket")}, i * 1000);
+	for (var i = 0; i < 0; ++i) {
+		setTimeout(function(){objectManager.createObjectInstance("rocket")}, i * 500);
 	};
 	
 	var spriteGeometry = new THREE.PlaneGeometry(10, 10);
@@ -173,7 +196,7 @@ window.addEventListener("load", function () {
 	var sprite = new THREE.Mesh(spriteGeometry, spriteMat);
 	sprite.rotation.x = -Math.PI * 0.5;
 	sprite.position.y = 0.2;
-	scene.add(sprite);
+	//scene.add(sprite);
 
 	light = new THREE.SpotLight( 0xffffdd, 1, 0, Math.PI, 1 );
 	light.position.set(30, 30, 30);
@@ -211,6 +234,7 @@ window.addEventListener("load", function () {
 
 	var prevTime = Date.now();
 	var curTime = Date.now();
+	player.cooldowns.attack = curTime;
 
 	function render () {
 		stats.begin();
@@ -259,6 +283,9 @@ window.addEventListener("load", function () {
 					THREEx.FullScreen.request();
 				}
 			});
+		}
+		if (keyboard.pressed(" ")) {
+			objectManager.createObjectInstance("rocket", { x : $("mech").position.x, z : $("mech").position.z });
 		}
 	}
 	
@@ -322,7 +349,7 @@ window.addEventListener("load", function () {
 		
 		var planeTarget = normalisedMouseToPlane(x, y);
 		
-		if (event.button == 0) { // LPM
+		if (event.button == 2) { // PPM
 			var hitSomething = testForPicking(x, y);
 			
 			if (!hitSomething)
@@ -330,10 +357,18 @@ window.addEventListener("load", function () {
 				player.move(planeTarget.x, planeTarget.z);
 			}
 		}
-		else if (event.button = 2) { // PPM
-			castingState = !castingState;
-			sprite.position.x = planeTarget.x;
-			sprite.position.z = planeTarget.z;
+		else if (event.button == 0) { // LPM
+			//castingState = !castingState;
+			//sprite.position.x = planeTarget.x;
+			//sprite.position.z = planeTarget.z;
+			if (Date.now() - player.cooldowns.attack > 100) {
+				objectManager.createObjectInstance("rocket", { 
+					x : $("mech").position.x,
+					z : $("mech").position.z,
+					rot_y : -direction($("mech").position, planeTarget) - Math.PI * 0.5
+				});					
+				player.cooldowns.attack = Date.now();
+			}
 		}
 		return true;
 	}

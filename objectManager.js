@@ -75,9 +75,10 @@ var ObjectManager = function () {
 		 * Does NOT add object to the scene and neither does require present scene.
 		 * @param {String}   name Object CInfo's identificator
 		 * @param {String}   path Path to object's model to be loaded
+		 * @param {Function} init Function that will be called once after creating an instance
 		 * @param {Function} behaviour Function that becomes "Update" function of instances.
 		 */
-		loadObjectCInfo: function (name, path, behaviour) {
+		loadObjectCInfo: function (name, path, init, behaviour) {
 			if (!objectCInfos[name])
 			{
 				objectCInfos[name] = {};
@@ -88,6 +89,7 @@ var ObjectManager = function () {
 					objectCInfos[name].geometry = geometry;
 					objectCInfos[name].material = new THREE.MeshFaceMaterial(materials);
 					objectCInfos[name].count = 0;
+					objectCInfos[name].init = init;
 					objectCInfos[name].behaviour = behaviour;
 					objectCInfos[name].instances = {};
 					
@@ -109,7 +111,7 @@ var ObjectManager = function () {
 		 */
 		 
 		//* @param {Function} cb   Callback that will be run on a given instance, when it's loaded.
-		createObjectInstance: function(name) {
+		createObjectInstance: function(name, initData) {
 			if (!scene) {
 				throw new Error("objectManager: Scene was not defined!");
 			}
@@ -122,10 +124,15 @@ var ObjectManager = function () {
 				{
 					objectCInfos[name].instances[instanceNumber] = instance;
 					scene.add(instance);
-					instance.behaviour = objectCInfos[name].behaviour;
 					
+					// This weird syntax allows using "this" in init function
+					instance.init = objectCInfos[name].init;
+					instance.init(initData)
+					instance.init = null;
+					
+					instance.behaviour = objectCInfos[name].behaviour;	
 					objectCInfos[name].count += 1;
-					
+				
 					return instance;
 				} else {
 					objectCInfos[name].queue++;
@@ -165,14 +172,31 @@ var ObjectManager = function () {
 		 * Updates all objects that have defined update behaviour
 		 */
 		updateAll: function () {
+			if (!scene) {
+				throw new Error("objectManager: Scene was not defined!");
+			}
+		
+			var result;
+		
 			for (var i in objects) {
-				if (objects[i].behaviour)
-					objects[i].behaviour();
+				if (objects[i].behaviour) {
+					result = objects[i].behaviour();
+					if (result === false) {
+						scene.remove(objects[i]);
+						delete objects[i];
+					}
+				}
 			}
 			for (var i in objectCInfos) {
-				for (var j in objectCInfos[i].instances)
-					if (objectCInfos[i].instances[j].behaviour)
-						objectCInfos[i].instances[j].behaviour();
+				for (var j in objectCInfos[i].instances) {
+					if (objectCInfos[i].instances[j].behaviour) {
+						result = objectCInfos[i].instances[j].behaviour();
+						if (result === false) {
+							scene.remove(objectCInfos[i].instances[j]);
+							delete objectCInfos[i].instances[j];
+						}
+					}
+				}
 			}
 		},
 		
