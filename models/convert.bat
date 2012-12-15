@@ -8,4 +8,7 @@ Set Name=%Name:~0,-4%
 
 python %ThreeJsRoot%/utils/exporters/obj/convert_obj_three.py -i %Name%.obj -o %Name%.json
 
+del "%Name%.obj"
+del "%Name%.mtl"
+
 :: pause
