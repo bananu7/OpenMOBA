@@ -157,9 +157,9 @@ window.addEventListener("load", function () {
 	});
 	
 	objectManager.loadObjectCInfo("rocket", "models/rocket.json", function () {
-		this.position.x += 0.1;
-		this.position.z += 0.1;
-		this.rotation.y = Math.PI * -0.75;
+		this.rotation.y = 0;
+		this.position.x += Math.cos(this.rotation.y + Math.PI * 0.5) * 0.1;
+		this.position.z += Math.sin(this.rotation.y + Math.PI * 0.5) * 0.1;
 	});
 	
 	for (var i = 0; i < 10; ++i)

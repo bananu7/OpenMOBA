@@ -81,7 +81,7 @@ var ObjectManager = function () {
 			if (!objectCInfos[name])
 			{
 				objectCInfos[name] = {};
-				objectCInfos[name].queue = {};
+				objectCInfos[name].queue = 0;
 				
 				this.loaderJSON.load(path, function (geometry, materials) {
 					objectCInfos[name] = {};
@@ -90,6 +90,12 @@ var ObjectManager = function () {
 					objectCInfos[name].count = 0;
 					objectCInfos[name].behaviour = behaviour;
 					objectCInfos[name].instances = {};
+					
+					var count = objectCInfos[name].queue;
+					// we set queue to null, to ensure createObjectInstance works properly
+					objectCInfos[name].queue = null;
+					for (var i = 0; i < count; ++i)
+						createObjectInstance(name);
 				});
 			} else {
 				throw new Error("objectManager: CInfo with given name already loaded");
@@ -122,7 +128,7 @@ var ObjectManager = function () {
 					
 					return instance;
 				} else {
-				//	objectCInfos[name].queue .push_back(?) (instance);
+					objectCInfos[name].queue++;
 				}
 			} else {
 				throw new Error("objectManager: No preloaded CInfo with given name exists");
