@@ -1,23 +1,4 @@
 
-circle = {
-	type = "circle",
-	x, y, r
-};
-
-aabb = { 
-	type = "aabb",
-	x, y, w, h
-};
-
-point = {
-	type = "point",
-	x, y
-};
-
-rectangle = {
-	type = "rectangle",
-	aabb, rotation
-}
 
 function CollisionAABBCircle(aabb, circle)
 {
@@ -40,8 +21,8 @@ function CollisionRectangleCirle(rectangle, circle)
 {
 }
 
-function CollisionCircleCircle(c1, c2)
+function CollisionCircleCircle(c1x, c1y, c1r, c2x, c2y, c2r)
 {
-	return (c1.x - c2.x)*(c1.x - c2.x)+(c1.y - c2.y)*(c1.y - c2.y) 
-			<= (c1.r + c2.r)*(c1.r + c2.r);
+	return (c1x - c2x)*(c1x - c2x)+(c1y - c2y)*(c1y - c2y) 
+			<= (c1r + c2r)*(c1r + c2r);
 }

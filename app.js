@@ -14,6 +14,8 @@ var $ = $ || function(name) {
 	return objectManager.getByName(name);
 };
 
+var physicsWorld = new PhysicsWorld();
+
 var castingState = false;
 
 var player = {
@@ -94,6 +96,8 @@ window.addEventListener("load", function () {
 	// Scene
 	scene = new THREE.Scene();
 	objectManager.setScene(scene);
+	physicsWorld.setScene(scene);
+	physicsWorld.setDebugDraw(true);
 	
 	// Camera
 	camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -128,6 +132,7 @@ window.addEventListener("load", function () {
 	picker.castShadow = true;
 	picker.receiveShadow = true;
 	scene.add(picker);
+	physicsWorld.add(picker, { type : "circle", r : 0.5 });
 	
 	// Grass Plane
 	var 
@@ -150,7 +155,15 @@ window.addEventListener("load", function () {
 		obj.position.y = 0;
 		obj.castShadow = true;
 		obj.receiveShadow = true;
+		
+		physicsWorld.add(obj, { type : "circle", r : 1 });
 	});
+	
+	/*objectManager.addObject("mapka", "models/mapka.json", function (obj) {
+		obj.position.y = 0;
+		obj.castShadow = true;
+		obj.receiveShadow = true;
+	});*/
 	
 	objectManager.addObject("waypoint", "models/Waypoint.json", function (obj) {
 		obj.position.y = 3;
@@ -173,13 +186,15 @@ window.addEventListener("load", function () {
 		}
 		
 		this.castShadow = true;
+		
+		physicsWorld.add(this, { type : "circle", r : 0.2 });
 	},
 	function () { // behaviour function
 		this.position.x += Math.cos(-this.rotation.y - Math.PI * 0.5) * 0.5;
 		this.position.z += Math.sin(-this.rotation.y - Math.PI * 0.5) * 0.5;
 		
-		if (this.position.x > 10 || this.position.x < -10 
-		 || this.position.z > 10 || this.position.z < -10) {
+		if (this.position.x > 100 || this.position.x < -100 
+		 || this.position.z > 100 || this.position.z < -100) {
 			return false;
 		}
 			
@@ -205,7 +220,7 @@ window.addEventListener("load", function () {
 	light.castShadow = true;
 
 	light.shadowCameraNear = 20;
-	light.shadowCameraFar = 100;
+	light.shadowCameraFar = 300;
 
 	light.shadowCameraVisible = true;
 
@@ -247,6 +262,8 @@ window.addEventListener("load", function () {
 				prevTime += 16;
 				
 				objectManager.updateAll();
+				physicsWorld.updateDebugGraphics();
+				physicsWorld.listAllCollisions();
 			}
 			renderer.render(scene, camera);
 			stats.end();
